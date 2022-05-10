@@ -1,0 +1,23 @@
+#parameter tuning
+
+#パラメーター1,パラメーター2の候補
+
+param1_list = [3,5,7,9]
+param2_list = [1,2,3,4,5]
+
+#グリッドサーチで探索するパラメーターの組み合わせ
+grid_search_params = []
+for p1 in param1_list:
+	for p2 in param2_list:
+		grid_serch_params.append((p1,p2))
+
+
+#ランダムサーチで探索するパラメーターの組み合わせ
+random_search_params = []
+trials = 15
+for i in range(trials):
+	p1 = np.random.choice(params1_list)
+	p2 = np.random.choice(params2_list)
+	random_search_params.append((p1,p2))
+
+	
