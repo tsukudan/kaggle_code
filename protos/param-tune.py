@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 from logging import StreamHandler, Formatter ,FileHandler, getLogger,DEBUG, INFO
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, ParameterGrid
@@ -55,7 +56,7 @@ if __name__ == "__main__":
     min_params = None
 
     
-    for params in ParameterGrid(all_params):
+    for params in tqdm(list(ParameterGrid(all_params))):
         logger.info("params:{}".format(params))
         
         logloss_score_list = []
