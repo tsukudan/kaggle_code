@@ -4,7 +4,7 @@ from tqdm import tqdm
 from logging import StreamHandler, Formatter ,FileHandler, getLogger,DEBUG, INFO
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, ParameterGrid
-from sklearn.metrics import log_loss, roc_auc_score
+from sklearn.metrics import log_loss, roc_auc_score, roc_curve, auc
 
 from load_data import load_train_data, load_test_data
 
@@ -13,6 +13,10 @@ logger = getLogger(__name__)
 DIR = "result_tmp/"
 SAMPLE_SABMIT_FILE = "../input/sample_submission.csv"
 
+def gini(y,pred):
+    fpr, tpr, thr = roc_curve(y, pred, pos_label=1)
+    g = 2 * auc(fpr,tpr) - 1
+    return g
 
 
 if __name__ == "__main__":
@@ -60,7 +64,7 @@ if __name__ == "__main__":
         logger.info("params:{}".format(params))
         
         logloss_score_list = []
-        auc_score_list = []
+        gini_score_list = []
         for train_idx, valid_idx in cv_model.split(x_train,y_train):
             
         
@@ -78,25 +82,25 @@ if __name__ == "__main__":
             pred = clf.predict_proba(val_x)[:,1]
 
             sc_logloss = log_loss(val_y, pred)
-            sc_suc = - roc_auc_score(val_y, pred)
+            sc_gini = - gini(val_y, pred)
 
             logloss_score_list.append(sc_logloss)
-            auc_score_list.append(sc_suc)
+            gini_score_list.append(sc_gini)
 
-            logger.debug("    logloss:{},auc:{}".format(sc_logloss, sc_suc))
+            logger.debug("logloss:{},gini:{}".format(sc_logloss, sc_gini))
             break
 
         logloss_score = np.mean(logloss_score_list)
-        auc_score = np.mean(auc_score_list)
-        if min_score > auc_score:
-            min_score = auc_score
+        gini_score = np.mean(gini_score_list)
+        if min_score > gini_score:
+            min_score = gini_score
             min_params = params
         
-        logger.info("  logloss:{},auc:{}".format(logloss_score, auc_score))
-        logger.info("    current min score:{}, min_params:{} ".format(min_score, min_params))
+        logger.info("logloss:{},gini:{}".format(logloss_score, gini_score))
+        logger.info("current min score:{}, min_params:{} ".format(min_score, min_params))
         
     logger.info("minimum params :{}".format(min_params))   
-    logger.info("minimum auc score :{}".format(min_score))   
+    logger.info("minimum gini score :{}".format(min_score))   
     clf = LogisticRegression(**min_params)
     clf.fit(x_train, y_train)
 
